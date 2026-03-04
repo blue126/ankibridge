@@ -6,6 +6,7 @@ on:
     paths:
       - ldoce5-api/**
       - anki-writer/**
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
