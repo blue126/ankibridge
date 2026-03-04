@@ -3,6 +3,7 @@ FROM python:3.11-slim-bookworm
 # Build deps for python-lzo (LZO compression in MDict files)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         gcc \
+        libc-dev \
         liblzo2-dev \
     && rm -rf /var/lib/apt/lists/*
 
