@@ -18,8 +18,8 @@ Images are built automatically by GitHub Actions on every push to `main` and pub
 ```
 git push origin main
   └─▶ GitHub Actions builds linux/amd64 + linux/arm64 images
-        └─▶ pushes to ghcr.io/<owner>/ldoce5-api:latest
-                       ghcr.io/<owner>/anki-writer:latest
+        └─▶ pushes to ghcr.io/blue126/ldoce5-api:latest
+                       ghcr.io/blue126/anki-writer:latest
 
 cd <iac-repo>
 ansible-playbook deploy.yml   # pulls latest images, restarts containers
@@ -65,19 +65,19 @@ Each service reads its configuration from environment variables (injected via en
 
 The following files must be present on the target host and mounted as volumes:
 
-| File | Mount path (example) | Notes |
-|------|----------------------|-------|
-| LDOCE5 `.mdx` | `/data/dict/...mdx` | Large, copyrighted — copy manually |
-| LDOCE5 `.mdd` | `/data/dict/...mdd` | Audio data |
-| `collection.anki2` | `/data/anki/collection.anki2` | Anki collection, read/write |
+| File | Mount path | Notes |
+|------|------------|-------|
+| LDOCE5 `.mdx` | `/opt/anki/dict/...mdx` | Large, copyrighted — copy manually |
+| LDOCE5 `.mdd` | `/opt/anki/dict/...mdd` | Audio data |
+| `collection.anki2` | `/opt/anki/collection/collection.anki2` | Anki collection, read/write |
 
 ---
 
 ## Health Checks
 
 ```bash
-curl http://<host>:5050/health   # ldoce5-api
-curl http://<host>:5051/health   # anki-writer
+curl http://152.67.113.23:5050/health   # ldoce5-api
+curl http://152.67.113.23:5051/health   # anki-writer
 ```
 
 ## Logs
