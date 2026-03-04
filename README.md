@@ -115,7 +115,7 @@ Copy `.env.example` as a starting point.
 | `API_PORT` | no | `5050` | Listen port |
 | `LLM_API_KEY` | no | — | Leave empty to disable AI sense disambiguation |
 | `LLM_BASE_URL` | no | `https://integrate.api.nvidia.com/v1` | OpenAI-compatible endpoint |
-| `LLM_MODEL` | no | `meta/llama-3.3-70b-instruct` | Model ID |
+| `LLM_MODEL` | no | `nvidia/llama-3.1-nemotron-70b-instruct` | Model ID |
 
 ### anki-writer
 

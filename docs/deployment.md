@@ -6,8 +6,8 @@ Two services are deployed as Docker containers on target hosts (linux/arm64):
 
 | Service | Image | Port |
 |---------|-------|------|
-| ldoce5-api | `ghcr.io/<owner>/ldoce5-api:latest` | 5050 |
-| anki-writer | `ghcr.io/<owner>/anki-writer:latest` | 5051 |
+| ldoce5-api | `ghcr.io/blue126/ldoce5-api:latest` | 5050 |
+| anki-writer | `ghcr.io/blue126/anki-writer:latest` | 5051 |
 
 Images are built automatically by GitHub Actions on every push to `main` and published to ghcr.io. Ansible playbooks for deployment live in the separate IaC repository.
 
@@ -43,7 +43,7 @@ Each service reads its configuration from environment variables (injected via en
 | `API_PORT` | no | `5050` | Listen port |
 | `LLM_API_KEY` | no | — | Leave empty to disable AI sense disambiguation |
 | `LLM_BASE_URL` | no | `https://integrate.api.nvidia.com/v1` | OpenAI-compatible endpoint |
-| `LLM_MODEL` | no | `meta/llama-3.3-70b-instruct` | Model ID |
+| `LLM_MODEL` | no | `nvidia/llama-3.1-nemotron-70b-instruct` | Model ID |
 
 ### anki-writer (port 5051)
 
