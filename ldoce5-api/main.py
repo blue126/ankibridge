@@ -29,7 +29,7 @@ API_PORT = int(os.environ.get("API_PORT", "5050"))
 # Empty LLM_API_KEY disables AI disambiguation entirely.
 LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
 LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://integrate.api.nvidia.com/v1")
-LLM_MODEL = os.environ.get("LLM_MODEL", "nvidia/llama-3.1-nemotron-70b-instruct")
+LLM_MODEL = os.environ.get("LLM_MODEL", "meta/llama-3.3-70b-instruct")
 
 
 # ---------------------------------------------------------------------------
@@ -139,11 +139,11 @@ def _extract_reading(html: str) -> str:
 
 def _extract_audio_filenames(html: str) -> dict:
     """Return {"uk": "GB_xxx.spx", "us": "US_xxx.spx"}, values may be None."""
-    uk_match = re.search(r'href="sound://(GB_[^"]+\.spx)"', html)
-    us_match = re.search(r'href="sound://(US_[^"]+\.spx)"', html)
+    bre_match = re.search(r'href="sound://(GB_[^"]+\.spx)"', html)
+    ame_match = re.search(r'href="sound://(US_[^"]+\.spx)"', html)
     return {
-        "uk": uk_match.group(1) if uk_match else None,
-        "us": us_match.group(1) if us_match else None,
+        "bre": bre_match.group(1) if bre_match else None,
+        "ame": ame_match.group(1) if ame_match else None,
     }
 
 
@@ -163,6 +163,41 @@ def _extract_sentence(html: str) -> str:
         return ""
     text = re.sub(r"<[^>]+>", "", m.group(1))
     return unescape(text).strip()
+
+
+def _extract_all_span_text(html: str, class_name: str) -> list[str]:
+    """Extract text from ALL <span class="class_name"> elements using a depth counter."""
+    pattern = rf'<span[^>]+class="{re.escape(class_name)}"[^>]*>'
+    results = []
+    search_from = 0
+    while True:
+        m = re.search(pattern, html[search_from:])
+        if not m:
+            break
+        content_start = search_from + m.end()
+        pos = content_start
+        depth = 1
+        while pos < len(html) and depth > 0:
+            next_open = html.find("<span", pos)
+            next_close = html.find("</span>", pos)
+            if next_close == -1:
+                pos = len(html)
+                break
+            if next_open != -1 and next_open < next_close:
+                depth += 1
+                pos = next_open + 1
+            else:
+                depth -= 1
+                if depth == 0:
+                    text = unescape(re.sub(r"<[^>]+>", "", html[content_start:next_close])).strip()
+                    if text:
+                        results.append(text)
+                    search_from = next_close + 7
+                    break
+                pos = next_close + 7
+        else:
+            search_from = content_start
+    return results
 
 
 def _extract_span_text(html: str, class_name: str) -> str:
@@ -246,9 +281,8 @@ def _extract_senses(html: str) -> list[dict]:
 
     blocks = re.split(r"<hr\s*/?>", html)
     for block in blocks:
-        # Extract POS label for this block
-        pos_match = re.search(r'class="POS"[^>]*>(.*?)</span>', block, re.DOTALL)
-        pos = re.sub(r"<[^>]+>", "", pos_match.group(1)).strip() if pos_match else ""
+        # Extract POS label for this block (use depth-aware extractor for nested spans)
+        pos = _extract_span_text(block, "POS")
 
         # Find start positions of every <span class="Sense" ...>
         sense_starts = [m.start() for m in re.finditer(r'<span[^>]+class="Sense"', block)]
@@ -266,12 +300,16 @@ def _extract_senses(html: str) -> list[dict]:
                 if ex_match
                 else ""
             )
+            gram = _extract_span_text(block, "GRAM")
+            freq = _extract_all_span_text(block, "FREQ")
             senses.append(
                 {
                     "pos": pos,
                     "sense_num": 1,
                     "definition": definition,
                     "example": example,
+                    "gram": gram,
+                    "freq": freq,
                     "definition_html": block,
                 }
             )
@@ -280,6 +318,8 @@ def _extract_senses(html: str) -> list[dict]:
         # The header (POS label, grammar info, etc.) precedes the first Sense span.
         # Prepend it to every sense's HTML so each card retains part-of-speech context.
         block_header = block[:sense_starts[0]]
+        gram = _extract_span_text(block_header, "GRAM")
+        freq = _extract_all_span_text(block_header, "FREQ")
 
         # Strip Tail (derivatives / cross-references) from the end of the block.
         tail_match = re.search(r'<span[^>]+class="Tail"', block)
@@ -308,6 +348,8 @@ def _extract_senses(html: str) -> list[dict]:
                     "sense_num": i + 1,
                     "definition": definition,
                     "example": example,
+                    "gram": gram,
+                    "freq": freq,
                     "definition_html": sense_html,
                 }
             )
@@ -585,6 +627,8 @@ async def lookup(
             "definition": s["definition"],
             "definition_html": s["definition_html"],
             "example": s["example"],
+            "gram": s["gram"],
+            "freq": s["freq"],
             "ai_selected": i == selected_idx,
         }
         for i, s in enumerate(senses)

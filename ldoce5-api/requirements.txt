@@ -1,0 +1,8 @@
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+httpx>=0.24.0
+python-dotenv>=1.0.0
+mdict-utils>=1.3.14
+readmdict>=0.0.4
+# LZO compression support for MDict v1.x — requires liblzo2-dev on build host
+python-lzo>=1.14

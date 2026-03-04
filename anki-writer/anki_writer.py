@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 COLLECTION_PATH = os.environ.get(
     "COLLECTION_PATH", "/opt/iphone-anki-sync/collection.anki2"
 )
-ANKI_SYNC_URL = os.environ.get("ANKI_SYNC_URL", "http://localhost:27701/")
+ANKI_SYNC_URL = os.environ.get("ANKI_SYNC_URL", "http://localhost:8080/")
 ANKI_SYNC_USER = os.environ.get("ANKI_SYNC_USER", "anki")
 ANKI_SYNC_PASSWORD = os.environ.get("ANKI_SYNC_PASSWORD", "anki")
 LDOCE5_API_URL = os.environ.get("LDOCE5_API_URL", "http://localhost:5050")

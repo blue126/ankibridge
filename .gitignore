@@ -1,0 +1,31 @@
+# Environment / secrets
+.env
+*.env
+
+# Dictionary data files (large, copyrighted)
+*.mdx
+*.mdd
+*.anki2
+*.anki21
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# BMAD working files
+_bmad/
+_bmad-output/
+
+# OS
+.DS_Store
